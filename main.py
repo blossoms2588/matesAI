@@ -19,8 +19,12 @@ from telegram.ext import (
 from telegram.constants import ParseMode
 from pymongo import MongoClient
 
+
 async def safe_reply(update, text, **kwargs):
     if update.message:
+        await update.message.reply_text(text, **kwargs)
+    elif update.callback_query:
+        await update.callback_query.message.reply_text(text, **kwargs)
         await update.message.reply_text(text, **kwargs)
     elif update.callback_query:
         await update.callback_query.message.reply_text(text, **kwargs)
@@ -40,18 +44,10 @@ likes_collection = db["likes"]
 
 # /start，带按钮
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id
-    profile = users_collection.find_one({'telegram_id': user_id})
-
-    if profile:
-        keyboard = InlineKeyboardMarkup([
-            [InlineKeyboardButton("🔍 开始匹配", callback_data="trigger_match")],
-            [InlineKeyboardButton("✏️ 修改资料", callback_data="trigger_edit")]
-        ])
-        await safe_reply(update, "欢迎回来！你可以开始匹配或修改你的资料：", reply_markup=keyboard)
-    else:
-        await safe_reply(update, "你好！你还没有填写资料，我们现在开始吧～")
-        return await start_profile(update, context)
+    keyboard = InlineKeyboardMarkup([
+        [InlineKeyboardButton("🔍 开始匹配", callback_data="trigger_match")]
+    ])
+    await safe_reply("欢迎来到 MatchCouples Bot！点击下方按钮开始匹配～", reply_markup=keyboard)
 
 # /me 查看资料
 async def me(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -155,7 +151,7 @@ async def match(update, context):
         except:
             continue
     if not candidates:
-        await safe_reply(update, "😢 暂时没有找到匹配对象，请稍后再试")
+       await safe_reply(update, "😢 暂时没有找到匹配对象，请稍后再试")
         return
     match = random.choice(candidates)
     context.user_data['last_match'] = match['telegram_id']
@@ -177,6 +173,10 @@ async def match(update, context):
 async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
+    if query.data == "trigger_edit":
+        await start_profile(update, context)
+        return
+
     if query.data == "trigger_match":
         await match(update, context)
         return
