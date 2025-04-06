@@ -212,22 +212,21 @@ def main():
     app.add_handler(CallbackQueryHandler(handle_button))
 
     conv_handler = ConversationHandler(
-    entry_points=[
-        CommandHandler("profile", start_profile),
-        CommandHandler("edit", start_profile),
-    ],
-    states={
-        NAME: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_name)],
-        GENDER: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_gender)],
-        AGE: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_age)],
-        HOBBIES: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_hobbies)],
-        BIO: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_bio)],
-    },
-    fallbacks=[CommandHandler("cancel", cancel)]
-)  # ✅ 这个括号不能漏！
-    
+        entry_points=[
+            CommandHandler("profile", start_profile),
+            CommandHandler("edit", start_profile),
+        ],
+        states={
+            NAME: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_name)],
+            GENDER: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_gender)],
+            AGE: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_age)],
+            HOBBIES: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_hobbies)],
+            BIO: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_bio)],
+        },
+        fallbacks=[CommandHandler("cancel", cancel)]
+    )
 
-app.add_handler(conv_handler)
+    app.add_handler(conv_handler)
 
     print("🔁 使用 polling 模式启动中...")
     app.run_polling()
