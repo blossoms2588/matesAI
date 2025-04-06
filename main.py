@@ -40,10 +40,18 @@ likes_collection = db["likes"]
 
 # /start，带按钮
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    keyboard = InlineKeyboardMarkup([
-        [InlineKeyboardButton("🔍 开始匹配", callback_data="trigger_match")]
-    ])
-    await safe_reply("欢迎来到 MatchCouples Bot！点击下方按钮开始匹配～", reply_markup=keyboard)
+    user_id = update.effective_user.id
+    profile = users_collection.find_one({'telegram_id': user_id})
+
+    if profile:
+        keyboard = InlineKeyboardMarkup([
+            [InlineKeyboardButton("🔍 开始匹配", callback_data="trigger_match")],
+            [InlineKeyboardButton("✏️ 修改资料", callback_data="trigger_edit")]
+        ])
+        await safe_reply(update, "欢迎回来！你可以开始匹配或修改你的资料：", reply_markup=keyboard)
+    else:
+        await safe_reply(update, "你好！你还没有填写资料，我们现在开始吧～")
+        return await start_profile(update, context)
 
 # /me 查看资料
 async def me(update: Update, context: ContextTypes.DEFAULT_TYPE):
