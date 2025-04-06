@@ -138,11 +138,13 @@ async def match(update, context):
     me_id = update.effective_user.id
     me = users_collection.find_one({'telegram_id': me_id})
     if not me:
-        
-return
+        await safe_reply(update, "你还没有填写资料，请先输入 /profile")
+        return
+
     my_age = int(me.get("age", 0))
     my_gender = me.get("gender")
     my_hobbies = set(me.get("hobbies", "").split(","))
+
     potentials = users_collection.find({'telegram_id': {'$ne': me_id}, 'gender': {'$ne': my_gender}})
     candidates = []
     for p in potentials:
@@ -153,9 +155,11 @@ return
                 candidates.append(p)
         except:
             continue
+
     if not candidates:
-        
-return
+        await safe_reply(update, "😢 暂时没有找到匹配对象，请稍后再试")
+        return
+
     match = random.choice(candidates)
     context.user_data['last_match'] = match['telegram_id']
     text = (
@@ -165,10 +169,13 @@ return
         f"年龄：{match['age']}\n"
         f"兴趣：{match['hobbies']}\n"
         f"介绍：{match['bio']}"
+    )
     buttons = [[
         InlineKeyboardButton("❤️ 喜欢", callback_data="like"),
         InlineKeyboardButton("🙅 跳过", callback_data="skip")
     ]]
+    await update.callback_query.message.reply_text(text, reply_markup=InlineKeyboardMarkup(buttons))
+
 
 # 按钮响应
 async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
