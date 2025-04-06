@@ -49,7 +49,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def me(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     profile = users_collection.find_one({'telegram_id': user_id})
-  if not profile:
+if not profile:
     await safe_reply(update, "⚠️ 你还没有填写资料哦，输入 /profile 开始吧～")
     return
 
@@ -62,6 +62,7 @@ await safe_reply(
     f"兴趣：{profile.get('hobbies', '未填写')}\n"
     f"简介：{profile.get('bio', '未填写')}"
 )
+
 
 
 # profile/edit 流程共用函数
