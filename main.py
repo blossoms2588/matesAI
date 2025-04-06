@@ -74,9 +74,9 @@ return NAME
 async def get_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data['name'] = update.message.text
     reply_keyboard = [['男', '女', '其他']]
-    
-)
-    return GENDER
+await safe_reply(update, "你的性别是？", reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
+
+return GENDER
 
 async def get_gender(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data['gender'] = update.message.text
