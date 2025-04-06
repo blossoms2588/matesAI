@@ -18,8 +18,12 @@ from telegram.ext import (
 )
 from telegram.constants import ParseMode
 from pymongo import MongoClient
+
 async def safe_reply(update, text, **kwargs):
     if update.message:
+        await update.message.reply_text(text, **kwargs)
+    elif update.callback_query:
+        await update.callback_query.message.reply_text(text, **kwargs)
         await safe_reply(text, **kwargs)
     elif update.callback_query:
         await update.callback_query.message.reply_text(text, **kwargs)
@@ -39,8 +43,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = InlineKeyboardMarkup([
         [InlineKeyboardButton("🔍 开始匹配", callback_data="trigger_match")]
     ])
-    await safe_reply(update, "欢迎来到 MatchCouples Bot！点击下方按钮开始匹配～", reply_markup=keyboard)
-
+    await safe_reply("欢迎来到 MatchCouples Bot！点击下方按钮开始匹配～", reply_markup=keyboard)
 
 # /me 查看资料
 async def me(update: Update, context: ContextTypes.DEFAULT_TYPE):
