@@ -29,8 +29,6 @@ async def safe_reply(update, text, **kwargs):
 
 
 
-
-
 await update.message.reply_text(text, **kwargs)
     elif update.callback_query:
         await update.callback_query.message.reply_text(text, **kwargs)
