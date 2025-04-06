@@ -71,10 +71,14 @@ async def me(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def start_profile(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     existing = users_collection.find_one({'telegram_id': user_id})
+
     if update.message.text == "/profile" and existing:
-        if update.message.text == "/profile" and existing:
         await safe_reply(update, "你已经填写过资料了，输入 /edit 可以修改哦～")
         return ConversationHandler.END
+
+    await safe_reply(update, "让我们开始填写你的资料吧！\n请输入你的昵称：")
+    return NAME
+
 
     
     await safe_reply(update, "让我们开始填写你的资料吧！\n请输入你的昵称：")
