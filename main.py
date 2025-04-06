@@ -44,6 +44,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = InlineKeyboardMarkup([
         [InlineKeyboardButton("🔍 开始匹配", callback_data="trigger_match")]
     ])
+    await safe_reply(update, "欢迎来到 MatchCouples Bot！点击下方按钮开始匹配～", reply_markup=keyboard)
+
     
 # /me 查看资料
 async def me(update: Update, context: ContextTypes.DEFAULT_TYPE):
