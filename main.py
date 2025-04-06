@@ -151,7 +151,7 @@ async def match(update, context):
         except:
             continue
     if not candidates:
-       await safe_reply(update, "😢 暂时没有找到匹配对象，请稍后再试")
+        await safe_reply("😢 暂时没有找到匹配对象，请稍后再试")
         return
     match = random.choice(candidates)
     context.user_data['last_match'] = match['telegram_id']
