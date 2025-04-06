@@ -40,12 +40,26 @@ async def get_gender(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def get_age(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data['age'] = update.message.text
+    reply_markup = ReplyKeyboardMarkup(
+    [["跳过兴趣"]], one_time_keyboard=True
+)
     await update.message.reply_text("有哪些兴趣爱好？（用逗号分隔）")
+    if update.message.text == "跳过兴趣":
+    context.user_data['hobbies'] = "未填写"
+else:
+    context.user_data['hobbies'] = update.message.text
     return HOBBIES
 
 async def get_hobbies(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data['hobbies'] = update.message.text
+    reply_markup = ReplyKeyboardMarkup(
+    [["跳过简介"]], one_time_keyboard=True
+)
     await update.message.reply_text("简单介绍一下你自己吧：")
+    if update.message.text == "跳过简介":
+    context.user_data['bio'] = "未填写"
+else:
+    context.user_data['bio'] = update.message.text
     return BIO
 
 async def get_bio(update: Update, context: ContextTypes.DEFAULT_TYPE):
