@@ -30,8 +30,6 @@ async def safe_reply(update, text, **kwargs):
         print("⚠️ 无法 reply：message 不存在")
 
 
-else:
-        print("⚠️ 无法 reply：message 不存在")
 NAME, GENDER, AGE, HOBBIES, BIO = range(5)
 
 # MongoDB 初始化
