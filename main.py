@@ -129,8 +129,9 @@ async def get_bio(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    
-return ConversationHandler.END
+    await safe_reply(update, "❌ 已取消资料填写。")
+    return ConversationHandler.END
+
 
 # 匹配逻辑
 async def match(update, context):
