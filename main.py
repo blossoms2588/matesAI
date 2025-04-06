@@ -4,7 +4,9 @@ from telegram import (
     Update,
     ReplyKeyboardMarkup,
     InlineKeyboardMarkup,
-    InlineKeyboardButton
+    InlineKeyboardButton,
+)
+
 from telegram.ext import (
     ApplicationBuilder,
     CommandHandler,
@@ -13,7 +15,9 @@ from telegram.ext import (
     filters,
     ContextTypes,
     ConversationHandler,
-    Defaults
+    Defaults,
+)
+
 from telegram.constants import ParseMode
 from pymongo import MongoClient
 
