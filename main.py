@@ -19,8 +19,6 @@ from telegram.ext import (
 from telegram.constants import ParseMode
 from pymongo import MongoClient
 
-
-
 async def safe_reply(update, text, **kwargs):
     if update.message:
         await update.message.reply_text(text, **kwargs)
@@ -28,6 +26,10 @@ async def safe_reply(update, text, **kwargs):
         await update.callback_query.message.reply_text(text, **kwargs)
     else:
         print("⚠️ 无法 reply：message 不存在")
+
+
+
+
 
 await update.message.reply_text(text, **kwargs)
     elif update.callback_query:
