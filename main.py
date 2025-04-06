@@ -18,31 +18,37 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("欢迎使用 MatchCouples Bot！输入 /profile 开始填写资料～")
 
 async def start_profile(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    print("📥 进入资料收集流程")
     await update.message.reply_text("让我们开始填写你的资料吧！\n请输入你的昵称：")
     return NAME
 
 async def get_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    print(f"👤 用户昵称：{update.message.text}")
     context.user_data['name'] = update.message.text
     reply_keyboard = [['男', '女', '其他']]
     await update.message.reply_text("你的性别是？", reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
     return GENDER
 
 async def get_gender(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    print(f"👤 性别：{update.message.text}")
     context.user_data['gender'] = update.message.text
     await update.message.reply_text("你几岁啦？")
     return AGE
 
 async def get_age(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    print(f"👤 年龄：{update.message.text}")
     context.user_data['age'] = update.message.text
     await update.message.reply_text("有哪些兴趣爱好？（用逗号分隔）")
     return HOBBIES
 
 async def get_hobbies(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    print(f"👤 兴趣：{update.message.text}")
     context.user_data['hobbies'] = update.message.text
     await update.message.reply_text("简单介绍一下你自己吧：")
     return BIO
 
 async def get_bio(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    print(f"👤 简介：{update.message.text}")
     context.user_data['bio'] = update.message.text
     profile = context.user_data
     await update.message.reply_text(
