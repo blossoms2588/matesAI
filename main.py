@@ -114,15 +114,19 @@ async def get_bio(update: Update, context: ContextTypes.DEFAULT_TYPE):
         {'telegram_id': profile['telegram_id']},
         {'$set': profile},
         upsert=True
+    )
 
     await safe_reply(
+        update,
         f"✅ 资料填写完成，已保存：\n\n"
         f"昵称：{profile['name']}\n"
         f"性别：{profile['gender']}\n"
         f"年龄：{profile['age']}\n"
         f"兴趣：{profile['hobbies']}\n"
         f"介绍：{profile['bio']}"
+    )
     return ConversationHandler.END
+
 
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
