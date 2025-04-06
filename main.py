@@ -229,8 +229,6 @@ def main():
 
 app.add_handler(conv_handler)
 
-    app.add_handler(conv_handler)
-
     print("🔁 使用 polling 模式启动中...")
     app.run_polling()
 
