@@ -70,10 +70,10 @@ async def start_profile(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     existing = users_collection.find_one({'telegram_id': user_id})
     if update.message.text == "/profile" and existing:
-        
-return ConversationHandler.END
-    
+    return ConversationHandler.END
+
 return NAME
+
 
 async def get_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data['name'] = update.message.text
