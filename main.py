@@ -5,7 +5,6 @@ from telegram import (
     ReplyKeyboardMarkup,
     InlineKeyboardMarkup,
     InlineKeyboardButton
-)
 from telegram.ext import (
     ApplicationBuilder,
     CommandHandler,
@@ -15,7 +14,6 @@ from telegram.ext import (
     ContextTypes,
     ConversationHandler,
     Defaults
-)
 from telegram.constants import ParseMode
 from pymongo import MongoClient
 
@@ -59,7 +57,6 @@ return
         f"年龄：{profile.get('age', '未填写')}\n"
         f"兴趣：{profile.get('hobbies', '未填写')}\n"
         f"简介：{profile.get('bio', '未填写')}"
-    )
 
 # profile/edit 流程共用函数
 async def start_profile(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -74,9 +71,8 @@ return NAME
 async def get_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data['name'] = update.message.text
     reply_keyboard = [['男', '女', '其他']]
-await safe_reply(update, "你的性别是？", reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
-
-return GENDER
+    
+    return GENDER
 
 async def get_gender(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data['gender'] = update.message.text
@@ -111,7 +107,6 @@ async def get_bio(update: Update, context: ContextTypes.DEFAULT_TYPE):
         {'telegram_id': profile['telegram_id']},
         {'$set': profile},
         upsert=True
-    )
 
     await safe_reply(
         f"✅ 资料填写完成，已保存：\n\n"
@@ -120,7 +115,6 @@ async def get_bio(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"年龄：{profile['age']}\n"
         f"兴趣：{profile['hobbies']}\n"
         f"介绍：{profile['bio']}"
-    )
     return ConversationHandler.END
 
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -159,12 +153,10 @@ return
         f"年龄：{match['age']}\n"
         f"兴趣：{match['hobbies']}\n"
         f"介绍：{match['bio']}"
-    )
     buttons = [[
         InlineKeyboardButton("❤️ 喜欢", callback_data="like"),
         InlineKeyboardButton("🙅 跳过", callback_data="skip")
     ]]
-)
 
 # 按钮响应
 async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -213,7 +205,6 @@ def main():
             BIO: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_bio)],
         },
         fallbacks=[CommandHandler("cancel", cancel)],
-    )
     app.add_handler(conv_handler)
 
     print("🔁 使用 polling 模式启动中...")
