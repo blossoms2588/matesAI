@@ -28,18 +28,8 @@ async def safe_reply(update, text, **kwargs):
         print("⚠️ 无法 reply：message 不存在")
 
 
-
-await update.message.reply_text(text, **kwargs)
-    elif update.callback_query:
-        await update.callback_query.message.reply_text(text, **kwargs)
-        await update.message.reply_text(text, **kwargs)
-    elif update.callback_query:
-        await update.callback_query.message.reply_text(text, **kwargs)
-        await safe_reply(text, **kwargs)
-    elif update.callback_query:
-        await update.callback_query.message.reply_text(text, **kwargs)
-
-
+else:
+        print("⚠️ 无法 reply：message 不存在")
 NAME, GENDER, AGE, HOBBIES, BIO = range(5)
 
 # MongoDB 初始化
@@ -54,15 +44,14 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = InlineKeyboardMarkup([
         [InlineKeyboardButton("🔍 开始匹配", callback_data="trigger_match")]
     ])
-    await safe_reply(update, "欢迎来到 MatchCouples Bot！点击下方按钮开始匹配～", reply_markup=keyboard)
-
+    
 # /me 查看资料
 async def me(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     profile = users_collection.find_one({'telegram_id': user_id})
     if not profile:
-        await safe_reply(update, "⚠️ 你还没有填写资料哦，输入 /profile 开始吧～")
-        return
+        
+return
     await safe_reply(
         f"📄 你的资料：\n\n"
         f"昵称：{profile.get('name', '未填写')}\n"
@@ -77,27 +66,28 @@ async def start_profile(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     existing = users_collection.find_one({'telegram_id': user_id})
     if update.message.text == "/profile" and existing:
-        await safe_reply(update, "你已经填写过资料了，输入 /edit 修改吧～")
-        return ConversationHandler.END
-    await safe_reply(update, "让我们开始填写你的资料吧！\n请输入你的昵称：")
-    return NAME
+        
+return ConversationHandler.END
+    
+return NAME
 
 async def get_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data['name'] = update.message.text
     reply_keyboard = [['男', '女', '其他']]
-    await safe_reply(update, "你的性别是？", reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
+    
+)
     return GENDER
 
 async def get_gender(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data['gender'] = update.message.text
-    await safe_reply(update, "你几岁啦？")
-    return AGE
+    
+return AGE
 
 async def get_age(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data['age'] = update.message.text
     reply_markup = ReplyKeyboardMarkup([["跳过兴趣"]], one_time_keyboard=True)
-    await safe_reply(update, "有哪些兴趣爱好？（用逗号分隔）", reply_markup=reply_markup)
-    return HOBBIES
+    
+return HOBBIES
 
 async def get_hobbies(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.message.text == "跳过兴趣":
@@ -105,8 +95,8 @@ async def get_hobbies(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         context.user_data['hobbies'] = update.message.text
     reply_markup = ReplyKeyboardMarkup([["跳过简介"]], one_time_keyboard=True)
-    await safe_reply(update, "简单介绍一下你自己吧：", reply_markup=reply_markup)
-    return BIO
+    
+return BIO
 
 async def get_bio(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.message.text == "跳过简介":
@@ -134,16 +124,16 @@ async def get_bio(update: Update, context: ContextTypes.DEFAULT_TYPE):
     return ConversationHandler.END
 
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await safe_reply(update, "❌ 已取消资料填写。")
-    return ConversationHandler.END
+    
+return ConversationHandler.END
 
 # 匹配逻辑
 async def match(update, context):
     me_id = update.effective_user.id
     me = users_collection.find_one({'telegram_id': me_id})
     if not me:
-        await safe_reply(update, "你还没有填写资料，请先输入 /profile")
-        return
+        
+return
     my_age = int(me.get("age", 0))
     my_gender = me.get("gender")
     my_hobbies = set(me.get("hobbies", "").split(","))
@@ -158,8 +148,8 @@ async def match(update, context):
         except:
             continue
     if not candidates:
-        await safe_reply(update, "😢 暂时没有找到匹配对象，请稍后再试")
-        return
+        
+return
     match = random.choice(candidates)
     context.user_data['last_match'] = match['telegram_id']
     text = (
@@ -174,7 +164,7 @@ async def match(update, context):
         InlineKeyboardButton("❤️ 喜欢", callback_data="like"),
         InlineKeyboardButton("🙅 跳过", callback_data="skip")
     ]]
-    await update.callback_query.message.reply_text(text, reply_markup=InlineKeyboardMarkup(buttons))
+)
 
 # 按钮响应
 async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
