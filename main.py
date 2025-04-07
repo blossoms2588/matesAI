@@ -42,9 +42,13 @@ likes_collection = db["likes"]
 # /start，带按钮
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = InlineKeyboardMarkup([
-        [InlineKeyboardButton("🔍 开始匹配", callback_data="trigger_match")]
+        [InlineKeyboardButton("🔍 开始匹配", callback_data="trigger_match")], #开始匹配按钮
+        [InlineKeyboardButton("📄 我的资料", callback_data="my_profile")]  # 我的资料按钮
     ])
-    await safe_reply(update, "欢迎来到 MatchCouples Bot！点击下方按钮开始匹配～", reply_markup=keyboard)
+    await update.message.reply_text(
+        "欢迎来到 MatchCouples Bot！点击下方按钮开始～",
+        reply_markup=keyboard
+    )
 
     
 # /me 查看资料
@@ -65,6 +69,12 @@ async def me(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"简介：{profile.get('bio', '未填写')}"
     )
 
+buttons = [
+        [InlineKeyboardButton("✏️ 修改资料", callback_data="trigger_edit")],
+        [InlineKeyboardButton("🔙 返回匹配", callback_data="trigger_match")]
+    ]
+
+ await update.message.reply_text(text, reply_markup=InlineKeyboardMarkup(buttons))
 
 
 # profile/edit 流程共用函数
@@ -191,13 +201,16 @@ async def match(update, context):
 async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
-    if query.data == "trigger_edit":
-        await start_profile(update, context)
-        return
 
-    if query.data == "trigger_match":
+    if query.data == "my_profile":
+        await me(update, context)
+
+    elif query.data == "trigger_match":
         await match(update, context)
-        return
+
+    elif query.data == "trigger_edit":
+        await start_profile(update, context)
+
 
     user_id = query.from_user.id
     target_id = context.user_data.get("last_match")
