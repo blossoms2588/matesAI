@@ -192,12 +192,11 @@ async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif data == "my_profile":
         await me(update, context)
     elif data == "trigger_edit":
-        # 修改资料
-        return await start_profile(update, context)
+        await start_profile(update, context)
+        return  # 明确结束回调
     elif data == "trigger_profile":
-        # 新用户添加资料
-        return await start_profile(update, context)
-
+        await start_profile(update, context)
+        return  # 明确结束回调
     else:
         await query.message.reply_text("[未知按钮]")
         return
@@ -231,7 +230,8 @@ def main():
             HOBBIES: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_hobbies)],
             BIO: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_bio)]
         },
-        fallbacks=[CommandHandler("cancel", cancel)]
+        fallbacks=[CommandHandler("cancel", cancel)],
+        per_message=False  # 新增关键修复
     )
     app.add_handler(conv_handler)
 
