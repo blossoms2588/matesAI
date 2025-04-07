@@ -24,10 +24,10 @@ from pymongo import MongoClient
 async def safe_reply(update, text, **kwargs):
     if update.message:
         await update.message.reply_text(text, **kwargs)
-    elif update.callback_query:
+    elif update.callback_query and update.callback_query.message:
         await update.callback_query.message.reply_text(text, **kwargs)
     else:
-        print("⚠️ 无法回复：未找到合适的消息对象")
+        print("⚠️ 无法 reply：message 不存在")
 
 
 NAME, GENDER, AGE, HOBBIES, BIO = range(5)
@@ -42,25 +42,21 @@ likes_collection = db["likes"]
 # /start，带按钮
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = InlineKeyboardMarkup([
-        [InlineKeyboardButton("🔍 开始匹配", callback_data="trigger_match")], #开始匹配按钮
-        [InlineKeyboardButton("📄 我的资料", callback_data="my_profile")]  # 我的资料按钮
+        [InlineKeyboardButton("🔍 开始匹配", callback_data="trigger_match")]
     ])
-    await update.message.reply_text(
-        "欢迎来到 MatchCouples Bot！点击下方按钮开始～",
-        reply_markup=keyboard
-    )
+    await safe_reply(update, "欢迎来到 MatchCouples Bot！点击下方按钮开始匹配～", reply_markup=keyboard)
 
     
 # /me 查看资料
 async def me(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     profile = users_collection.find_one({'telegram_id': user_id})
-
     if not profile:
-        await safe_reply(update, "你还没有填写资料，输入 /profile 开始填写吧～")
+        await safe_reply(update, "⚠️ 你还没有填写资料哦，输入 /profile 开始吧～")
         return
 
-    text = (
+    await safe_reply(
+        update,
         f"📄 你的资料：\n\n"
         f"昵称：{profile.get('name', '未填写')}\n"
         f"性别：{profile.get('gender', '未填写')}\n"
@@ -69,21 +65,12 @@ async def me(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"简介：{profile.get('bio', '未填写')}"
     )
 
-    buttons = [
-        [InlineKeyboardButton("✏️ 修改资料", callback_data="trigger_edit")],
-        [InlineKeyboardButton("🔙 返回匹配", callback_data="trigger_match")]
-    ]
 
-    await safe_reply(update, text, reply_markup=InlineKeyboardMarkup(buttons))
 
 # profile/edit 流程共用函数
 async def start_profile(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.callback_query:
-        await update.callback_query.message.reply_text("让我们开始填写你的资料吧！\n请输入你的昵称：")
-    else:
-        await update.message.reply_text("让我们开始填写你的资料吧！\n请输入你的昵称：")
-
-    return NAME
+    user_id = update.effective_user.id
+    existing = users_collection.find_one({'telegram_id': user_id})
 
     if update.message.text == "/profile" and existing:
         await safe_reply(update, "你已经填写过资料了，输入 /edit 可以修改哦～")
@@ -93,22 +80,26 @@ async def start_profile(update: Update, context: ContextTypes.DEFAULT_TYPE):
     return NAME
 
 
+    
+    await safe_reply(update, "让我们开始填写你的资料吧！\n请输入你的昵称：")
+    return NAME
+
+
 async def get_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data['name'] = update.message.text
     reply_keyboard = [['男', '女', '其他']]
-    await safe_reply(update, "你的性别是？", reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
-    return GENDER
     
+    return GENDER
 
 async def get_gender(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data['gender'] = update.message.text
-    await safe_reply(update, "你几岁啦？")
+    
     return AGE
 
 async def get_age(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data['age'] = update.message.text
     reply_markup = ReplyKeyboardMarkup([["跳过兴趣"]], one_time_keyboard=True)
-    await safe_reply(update, "有哪些兴趣爱好？（用逗号分隔）", reply_markup=reply_markup)
+    
     return HOBBIES
 
 async def get_hobbies(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -117,9 +108,8 @@ async def get_hobbies(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         context.user_data['hobbies'] = update.message.text
     reply_markup = ReplyKeyboardMarkup([["跳过简介"]], one_time_keyboard=True)
-    await safe_reply(update, "简单介绍一下你自己吧：", reply_markup=reply_markup)
+    
     return BIO
-
 
 async def get_bio(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.message.text == "跳过简介":
@@ -201,16 +191,13 @@ async def match(update, context):
 async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
-
-    if query.data == "my_profile":
-        await me(update, context)
-
-    elif query.data == "trigger_match":
-        await match(update, context)
-
-    elif query.data == "trigger_edit":
+    if query.data == "trigger_edit":
         await start_profile(update, context)
+        return
 
+    if query.data == "trigger_match":
+        await match(update, context)
+        return
 
     user_id = query.from_user.id
     target_id = context.user_data.get("last_match")
@@ -238,7 +225,6 @@ def main():
         entry_points=[
             CommandHandler("profile", start_profile),
             CommandHandler("edit", start_profile),
-            CallbackQueryHandler(start_profile, pattern="^trigger_edit$")
         ],
         states={
             NAME: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_name)],
@@ -248,8 +234,7 @@ def main():
             BIO: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_bio)],
         },
         fallbacks=[CommandHandler("cancel", cancel)]
-      )
-
+    )
 
     app.add_handler(conv_handler)
 
