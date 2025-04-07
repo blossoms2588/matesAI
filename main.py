@@ -205,7 +205,7 @@ async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # 直接调用 start_profile 并传递对话控制权
         await start_profile(update, context)
         return  # 明确结束回调
-    else:
+     else:
         await query.message.reply_text("[未知按钮]")
         return
 
