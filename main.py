@@ -181,25 +181,37 @@ async def match(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await query.message.reply_text("🔎 [示例匹配逻辑] 你可以扩展兴趣、性别等筛选~")
 
 # ====== 按钮回调逻辑 ======
+# ====== 按钮回调逻辑 ======
 async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     user_id = query.from_user.id
     data = query.data
     log(f"[handle_button] user {user_id} 点击按钮: {data}")
 
-    await query.answer()
+    await query.answer()  # 必须优先应答回调
 
     if data == "trigger_match":
         await match(update, context)
     elif data == "my_profile":
         await me(update, context)
     elif data in ["trigger_edit", "trigger_profile"]:
-        # 直接调用 start_profile 并传递对话控制权
-        await start_profile(update, context)
-        return  # 明确结束回调
+        # 关键修复：清理旧消息按钮并触发对话流程
+        await query.edit_message_reply_markup(reply_markup=None)  # 删除原消息的按钮
+        await _start_profile_clean(update, context)  # 调用清理后的入口函数
     else:
         await query.message.reply_text("[未知按钮]")
-        return
+
+async def _start_profile_clean(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """独立入口函数，确保从按钮触发时消息环境正确"""
+    user_id = update.effective_user.id
+    log(f"[_start_profile_clean] 用户 {user_id} 进入资料修改流程")
+
+    # 清空旧的对话数据
+    context.user_data.clear()
+
+    # 发送昵称输入提示
+    await update.callback_query.message.reply_text("让我们开始填写你的资料吧！\n请输入你的昵称：")
+    return NAME  # 明确返回对话状态
 
 def main():
     TOKEN = os.getenv("TOKEN")
