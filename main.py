@@ -74,7 +74,7 @@ buttons = [
         [InlineKeyboardButton("🔙 返回匹配", callback_data="trigger_match")]
     ]
 
- await update.message.reply_text(text, reply_markup=InlineKeyboardMarkup(buttons))
+     await update.message.reply_text(text, reply_markup=InlineKeyboardMarkup(buttons))
 
 
 # profile/edit 流程共用函数
