@@ -102,13 +102,13 @@ async def get_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def get_gender(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data['gender'] = update.message.text
-    
+    await safe_reply(update, "你几岁啦？")
     return AGE
 
 async def get_age(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data['age'] = update.message.text
     reply_markup = ReplyKeyboardMarkup([["跳过兴趣"]], one_time_keyboard=True)
-    
+    await safe_reply(update, "有哪些兴趣爱好？（用逗号分隔）", reply_markup=reply_markup)
     return HOBBIES
 
 async def get_hobbies(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -117,8 +117,9 @@ async def get_hobbies(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         context.user_data['hobbies'] = update.message.text
     reply_markup = ReplyKeyboardMarkup([["跳过简介"]], one_time_keyboard=True)
-    
+    await safe_reply(update, "简单介绍一下你自己吧：", reply_markup=reply_markup)
     return BIO
+
 
 async def get_bio(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.message.text == "跳过简介":
@@ -237,6 +238,7 @@ def main():
         entry_points=[
             CommandHandler("profile", start_profile),
             CommandHandler("edit", start_profile),
+            CallbackQueryHandler(start_profile, pattern="^trigger_edit$")
         ],
         states={
             NAME: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_name)],
@@ -246,7 +248,8 @@ def main():
             BIO: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_bio)],
         },
         fallbacks=[CommandHandler("cancel", cancel)]
-    )
+      )
+
 
     app.add_handler(conv_handler)
 
