@@ -24,10 +24,10 @@ from pymongo import MongoClient
 async def safe_reply(update, text, **kwargs):
     if update.message:
         await update.message.reply_text(text, **kwargs)
-    elif update.callback_query and update.callback_query.message:
+    elif update.callback_query:
         await update.callback_query.message.reply_text(text, **kwargs)
     else:
-        print("⚠️ 无法 reply：message 不存在")
+        print("⚠️ 无法回复：未找到合适的消息对象")
 
 
 NAME, GENDER, AGE, HOBBIES, BIO = range(5)
