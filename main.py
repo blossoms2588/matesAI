@@ -161,7 +161,7 @@ async def get_bio(update: Update, context: ContextTypes.DEFAULT_TYPE):
         {'$set': profile},
         upsert=True
     )
-    log(f"✅ 用户 {user_id} 资料保存结果: matched={result.matched_count}, modified={result.modified_count}, upserted_id={result.upserted_id}")  # 新增日志
+    log(f"✅ 用户 {user_id} 资料保存结果: matched={result.matched_count}, modified={result.modified_count}, upserted_id={result.upserted_id}")
     await safe_reply(update, "✅ 资料填写完成，已保存！")
     return ConversationHandler.END
 
@@ -206,14 +206,14 @@ async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def _start_profile_clean(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """独立入口函数，确保从按钮触发时消息环境正确"""
     user_id = update.effective_user.id
-    log(f"[_start_profile_clean] 用户 {user_id} 进入资料修改流程")  # 修复日志中的拼写错误
+    log(f"[_start_profile_clean] 用户 {user_id} 进入资料修改流程")  # 修正日志拼写
 
     # 清空旧的对话数据
     context.user_data.clear()
 
     # 发送昵称输入提示
     await update.callback_query.message.reply_text("让我们开始填写你的资料吧！\n请输入你的昵称：")
-    return NAME  # 强制返回 NAME 状态，激活 ConversationHandler
+    return NAME  # 明确返回对话状态
 
 def main():
     TOKEN = os.getenv("TOKEN")
