@@ -227,11 +227,13 @@ def main():
     app.add_handler(CallbackQueryHandler(handle_button))
 
     # 对话流程
-    conv_handler = ConversationHandler(  # 修复缩进：与上一行对齐
+    # ====== 修改 ConversationHandler 的 entry_points ======
+    conv_handler = ConversationHandler(
         entry_points=[
             CommandHandler("profile", start_profile),
             CommandHandler("edit", start_profile),
-            CallbackQueryHandler(start_profile, pattern="^(trigger_edit|trigger_profile)$")
+            # 关键修复：指向 _start_profile_clean 函数
+            CallbackQueryHandler(_start_profile_clean, pattern="^(trigger_edit|trigger_profile)$")
         ],
         states={
             NAME: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_name)],
