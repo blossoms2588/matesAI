@@ -25,7 +25,6 @@ async def safe_reply(update, text, **kwargs):
     else:
         log("⚠️ 无法回复：未找到合适的消息对象")
 
-# Conversation states
 NAME, GENDER, AGE, HOBBIES, BIO = range(5)
 
 MONGO_URI = os.getenv("MONGO_URI")
@@ -203,7 +202,6 @@ async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.message.reply_text("[未知按钮]")
         return
 
-# ====== 主函数 ======
 def main():
     TOKEN = os.getenv("TOKEN")
     defaults = Defaults(parse_mode=ParseMode.HTML)
