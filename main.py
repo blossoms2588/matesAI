@@ -142,31 +142,26 @@ async def get_hobbies(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def get_bio(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     user_input = update.message.text
-    users_collection.update_one(
-        {'telegram_id': user_id},
-        {'$set': profile},
-        upsert=True
-    )
     log(f"[get_bio] user {user_id} 输入简介: {user_input}")
-    await safe_reply(update, "✅ 资料填写完成，已保存！")
-    return ConversationHandler.END
 
+    # 处理输入
     if user_input == "跳过简介":
         context.user_data['bio'] = "未填写"
     else:
         context.user_data['bio'] = user_input
 
     # 保存到数据库
-    profile = context.user_data
+    profile = context.user_data.copy()  # 复制上下文数据
     profile['telegram_id'] = user_id
 
+    # 更新数据库
     users_collection.update_one(
         {'telegram_id': user_id},
         {'$set': profile},
         upsert=True
     )
     await safe_reply(update, "✅ 资料填写完成，已保存！")
-    return ConversationHandler.END
+    return ConversationHandler.END  # 确保只返回一次
 
 # ====== /cancel ======
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -220,11 +215,10 @@ def main():
     app.add_handler(CallbackQueryHandler(handle_button))
 
     # 对话流程
-       conv_handler = ConversationHandler(
+    conv_handler = ConversationHandler(  # 修复缩进：与上一行对齐
         entry_points=[
             CommandHandler("profile", start_profile),
             CommandHandler("edit", start_profile),
-            # 直接通过 CallbackQueryHandler 触发，无需额外 pattern 过滤
             CallbackQueryHandler(start_profile, pattern="^(trigger_edit|trigger_profile)$")
         ],
         states={
@@ -235,10 +229,10 @@ def main():
             BIO: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_bio)]
         },
         fallbacks=[CommandHandler("cancel", cancel)],
-        per_message=False  # 新增关键修复
+        per_message=False
     )
     app.add_handler(conv_handler)
-   
+
     # 测试 MongoDB 连接
     try:
         mongo_client.admin.command('ping')
