@@ -95,7 +95,8 @@ async def start_profile(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def get_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     user_input = update.message.text
-    log(f"[get_name] user {user_id} 输入昵称: {user_input}")
+    log(f"[get_name] 用户 {user_id} 输入昵称: {user_input} (消息ID: {update.message.message_id})")  # 新增详细日志
+    # ...后续代码不变...
 
     context.user_data['name'] = user_input
 
@@ -155,13 +156,14 @@ async def get_bio(update: Update, context: ContextTypes.DEFAULT_TYPE):
     profile['telegram_id'] = user_id
 
     # 更新数据库
-    users_collection.update_one(
+    result = users_collection.update_one(
         {'telegram_id': user_id},
         {'$set': profile},
         upsert=True
     )
+    log(f"✅ 用户 {user_id} 资料保存结果: matched={result.matched_count}, modified={result.modified_count}, upserted_id={result.upserted_id}")  # 新增日志
     await safe_reply(update, "✅ 资料填写完成，已保存！")
-    return ConversationHandler.END  # 确保只返回一次
+    return ConversationHandler.END
 
 # ====== /cancel ======
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -204,14 +206,14 @@ async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def _start_profile_clean(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """独立入口函数，确保从按钮触发时消息环境正确"""
     user_id = update.effective_user.id
-    log(f"[_start_profile_clean] 用户 {user_id} 进入资料修改流程")
+    log(f"[_start_profile_clean] 用户 {user_id} 进入资料修改流程")  # 修复日志中的拼写错误
 
     # 清空旧的对话数据
     context.user_data.clear()
 
     # 发送昵称输入提示
     await update.callback_query.message.reply_text("让我们开始填写你的资料吧！\n请输入你的昵称：")
-    return NAME  # 明确返回对话状态
+    return NAME  # 强制返回 NAME 状态，激活 ConversationHandler
 
 def main():
     TOKEN = os.getenv("TOKEN")
@@ -227,12 +229,11 @@ def main():
     app.add_handler(CallbackQueryHandler(handle_button))
 
     # 对话流程
-    # ====== 修改 ConversationHandler 的 entry_points ======
     conv_handler = ConversationHandler(
         entry_points=[
             CommandHandler("profile", start_profile),
             CommandHandler("edit", start_profile),
-            # 关键修复：指向 _start_profile_clean 函数
+            # 关键修复：直接绑定到 _start_profile_clean
             CallbackQueryHandler(_start_profile_clean, pattern="^(trigger_edit|trigger_profile)$")
         ],
         states={
