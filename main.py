@@ -142,7 +142,7 @@ async def get_hobbies(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def get_bio(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     user_input = update.message.text
-     users_collection.update_one(
+    users_collection.update_one(
         {'telegram_id': user_id},
         {'$set': profile},
         upsert=True
