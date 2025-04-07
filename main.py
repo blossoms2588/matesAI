@@ -17,13 +17,15 @@ def log(text: str):
     print(f"[DEBUG] {text}", flush=True)
 
 async def safe_reply(update, text, **kwargs):
-    """通用回复函数，兼容文字消息和按钮回调"""
-    if update.message:
-        await update.message.reply_text(text, **kwargs)
-    elif update.callback_query and update.callback_query.message:
-        await update.callback_query.message.reply_text(text, **kwargs)
-    else:
-        log("⚠️ 无法回复：未找到合适的消息对象")
+    try:
+        if update.message:
+            await update.message.reply_text(text, **kwargs)
+        elif update.callback_query and update.callback_query.message:
+            await update.callback_query.message.reply_text(text, **kwargs)
+        else:
+            log("⚠️ 无法回复：未找到合适的消息对象")
+    except Exception as e:
+        log(f"💥 消息发送失败: {str(e)}")  # 新增错误日志
 
 NAME, GENDER, AGE, HOBBIES, BIO = range(5)
 
@@ -190,29 +192,30 @@ async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     data = query.data
     log(f"[handle_button] user {user_id} 点击按钮: {data}")
 
-    await query.answer()  # 必须优先应答回调
+    await query.answer()
 
     if data == "trigger_match":
         await match(update, context)
     elif data == "my_profile":
         await me(update, context)
     elif data in ["trigger_edit", "trigger_profile"]:
-        # 关键修复：清理旧消息按钮并触发对话流程
-        await query.edit_message_reply_markup(reply_markup=None)  # 删除原消息的按钮
-        await _start_profile_clean(update, context)  # 调用清理后的入口函数
+        # 关键修复：移除按钮并触发对话流程
+        await query.edit_message_reply_markup(reply_markup=None)
+        # 返回 _start_profile_clean 的状态
+        return await _start_profile_clean(update, context)
     else:
         await query.message.reply_text("[未知按钮]")
 
 async def _start_profile_clean(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """独立入口函数，确保从按钮触发时消息环境正确"""
     user_id = update.effective_user.id
-    log(f"[_start_profile_clean] 用户 {user_id} 进入资料修改流程")  # 修正日志拼写
+    log(f"[_start_profile_clean] 用户 {user_id} 进入资料修改流程")  # 修正日志
 
     # 清空旧的对话数据
     context.user_data.clear()
 
-    # 发送昵称输入提示
-    await update.callback_query.message.reply_text("让我们开始填写你的资料吧！\n请输入你的昵称：")
+    # 使用 safe_reply 发送消息（兼容按钮回调）
+    await safe_reply(update, "让我们开始填写你的资料吧！\n请输入你的昵称：")
     return NAME  # 明确返回对话状态
 
 def main():
