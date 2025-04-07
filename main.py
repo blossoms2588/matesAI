@@ -201,11 +201,11 @@ async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif data == "trigger_edit":
         await start_profile(update, context)
         return  # 明确结束回调
-     elif data in ["trigger_edit", "trigger_profile"]:
+    elif data in ["trigger_edit", "trigger_profile"]:
         # 直接调用 start_profile 并传递对话控制权
         await start_profile(update, context)
         return  # 明确结束回调
-     else:
+    else:
         await query.message.reply_text("[未知按钮]")
         return
 
