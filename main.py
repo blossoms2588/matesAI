@@ -142,7 +142,14 @@ async def get_hobbies(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def get_bio(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     user_input = update.message.text
+     users_collection.update_one(
+        {'telegram_id': user_id},
+        {'$set': profile},
+        upsert=True
+    )
     log(f"[get_bio] user {user_id} 输入简介: {user_input}")
+    await safe_reply(update, "✅ 资料填写完成，已保存！")
+    return ConversationHandler.END
 
     if user_input == "跳过简介":
         context.user_data['bio'] = "未填写"
@@ -194,7 +201,8 @@ async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif data == "trigger_edit":
         await start_profile(update, context)
         return  # 明确结束回调
-    elif data == "trigger_profile":
+     elif data in ["trigger_edit", "trigger_profile"]:
+        # 直接调用 start_profile 并传递对话控制权
         await start_profile(update, context)
         return  # 明确结束回调
     else:
@@ -215,13 +223,12 @@ def main():
     app.add_handler(CallbackQueryHandler(handle_button))
 
     # 对话流程
-    conv_handler = ConversationHandler(
+       conv_handler = ConversationHandler(
         entry_points=[
             CommandHandler("profile", start_profile),
             CommandHandler("edit", start_profile),
-            # 按钮触发
-            CallbackQueryHandler(start_profile, pattern="^trigger_edit$"),
-            CallbackQueryHandler(start_profile, pattern="^trigger_profile$")
+            # 直接通过 CallbackQueryHandler 触发，无需额外 pattern 过滤
+            CallbackQueryHandler(start_profile, pattern="^(trigger_edit|trigger_profile)$")
         ],
         states={
             NAME: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_name)],
@@ -234,6 +241,14 @@ def main():
         per_message=False  # 新增关键修复
     )
     app.add_handler(conv_handler)
+   
+    # 测试 MongoDB 连接
+    try:
+        mongo_client.admin.command('ping')
+        log("✅ MongoDB 连接正常")
+    except Exception as e:
+        log(f"❌ MongoDB 连接异常: {e}")
+        raise
 
     print("🔁 使用 polling 模式启动中...")
     app.run_polling()
