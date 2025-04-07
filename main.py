@@ -221,6 +221,10 @@ async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await query.edit_message_text("❤️ 已发送喜欢，等待对方回应！")
     elif query.data == "skip":
         await query.edit_message_text("已跳过该用户。")
+        
+async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await safe_reply(update, "❌ 已取消资料填写。")
+    return ConversationHandler.END
 
 ########################################
 # 机器人启动配置
@@ -243,13 +247,14 @@ def main():
             CommandHandler("edit", start_profile),
         ],
         states={
+             # ... 状态配置 ...
             NAME: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_name)],
             GENDER: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_gender)],
             AGE: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_age)],
             HOBBIES: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_hobbies)],
             BIO: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_bio)],
         },
-        fallbacks=[CommandHandler("cancel", cancel)]
+        fallbacks=[CommandHandler("cancel", cancel)]# 确保此处引用的 cancel 已定义
     )
     app.add_handler(conv_handler)
 
