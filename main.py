@@ -55,12 +55,12 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def me(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     profile = users_collection.find_one({'telegram_id': user_id})
+
     if not profile:
-        await safe_reply(update, "⚠️ 你还没有填写资料哦，输入 /profile 开始吧～")
+        await update.message.reply_text("你还没有填写资料，输入 /profile 开始填写吧～")
         return
 
-    await safe_reply(
-        update,
+    text = (
         f"📄 你的资料：\n\n"
         f"昵称：{profile.get('name', '未填写')}\n"
         f"性别：{profile.get('gender', '未填写')}\n"
@@ -69,13 +69,12 @@ async def me(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"简介：{profile.get('bio', '未填写')}"
     )
 
-buttons = [
+    buttons = [
         [InlineKeyboardButton("✏️ 修改资料", callback_data="trigger_edit")],
         [InlineKeyboardButton("🔙 返回匹配", callback_data="trigger_match")]
     ]
 
     await update.message.reply_text(text, reply_markup=InlineKeyboardMarkup(buttons))
-
 
 # profile/edit 流程共用函数
 async def start_profile(update: Update, context: ContextTypes.DEFAULT_TYPE):
