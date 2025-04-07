@@ -97,8 +97,7 @@ async def start_profile(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def get_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     user_input = update.message.text
-    log(f"[get_name] 用户 {user_id} 输入昵称: {user_input} (消息ID: {update.message.message_id})")  # 新增详细日志
-    # ...后续代码不变...
+    log(f"[get_name] ✅ 用户 {user_id} 输入昵称: {user_input} (消息ID: {update.message.message_id})")
 
     context.user_data['name'] = user_input
 
@@ -201,7 +200,7 @@ async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif data in ["trigger_edit", "trigger_profile"]:
         # 关键修复：移除按钮并触发对话流程
         await query.edit_message_reply_markup(reply_markup=None)
-        # 返回 _start_profile_clean 的状态
+        # 直接返回对话状态
         return await _start_profile_clean(update, context)
     else:
         await query.message.reply_text("[未知按钮]")
@@ -209,13 +208,13 @@ async def handle_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def _start_profile_clean(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """独立入口函数，确保从按钮触发时消息环境正确"""
     user_id = update.effective_user.id
-    log(f"[_start_profile_clean] 用户 {user_id} 进入资料修改流程")  # 修正日志
+    log(f"[_start_profile_clean] 用户 {user_id} 进入资料修改流程")
 
     # 清空旧的对话数据
     context.user_data.clear()
 
-    # 使用 safe_reply 发送消息（兼容按钮回调）
-    await safe_reply(update, "让我们开始填写你的资料吧！\n请输入你的昵称：")
+    # 直接通过原消息对象发送提示（避免使用 safe_reply）
+    await update.callback_query.message.reply_text("让我们开始填写你的资料吧！\n请输入你的昵称：")
     return NAME  # 明确返回对话状态
 
 def main():
