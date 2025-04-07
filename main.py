@@ -57,7 +57,7 @@ async def me(update: Update, context: ContextTypes.DEFAULT_TYPE):
     profile = users_collection.find_one({'telegram_id': user_id})
 
     if not profile:
-        await update.message.reply_text("你还没有填写资料，输入 /profile 开始填写吧～")
+        await safe_reply(update, "你还没有填写资料，输入 /profile 开始填写吧～")
         return
 
     text = (
@@ -74,12 +74,16 @@ async def me(update: Update, context: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton("🔙 返回匹配", callback_data="trigger_match")]
     ]
 
-    await update.message.reply_text(text, reply_markup=InlineKeyboardMarkup(buttons))
+    await safe_reply(update, text, reply_markup=InlineKeyboardMarkup(buttons))
 
 # profile/edit 流程共用函数
 async def start_profile(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id
-    existing = users_collection.find_one({'telegram_id': user_id})
+    if update.callback_query:
+        await update.callback_query.message.reply_text("让我们开始填写你的资料吧！\n请输入你的昵称：")
+    else:
+        await update.message.reply_text("让我们开始填写你的资料吧！\n请输入你的昵称：")
+
+    return NAME
 
     if update.message.text == "/profile" and existing:
         await safe_reply(update, "你已经填写过资料了，输入 /edit 可以修改哦～")
@@ -89,16 +93,12 @@ async def start_profile(update: Update, context: ContextTypes.DEFAULT_TYPE):
     return NAME
 
 
-    
-    await safe_reply(update, "让我们开始填写你的资料吧！\n请输入你的昵称：")
-    return NAME
-
-
 async def get_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data['name'] = update.message.text
     reply_keyboard = [['男', '女', '其他']]
-    
+    await safe_reply(update, "你的性别是？", reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
     return GENDER
+    
 
 async def get_gender(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data['gender'] = update.message.text
