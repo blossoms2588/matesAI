@@ -88,13 +88,16 @@ async def start_profile(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     existing = users_collection.find_one({'telegram_id': user_id})
 
-    # 已存在资料时的处理
-    if update.message.text == "/profile" and existing:
-        await safe_reply(update, "你已经填写过资料了，输入 /edit 可以修改哦～")
-        return ConversationHandler.END
+    # 兼容按钮触发和命令触发两种方式
+    if update.message:  # 通过命令触发（如 /profile）
+        if update.message.text == "/profile" and existing:
+            await safe_reply(update, "你已经填写过资料了，输入 /edit 可以修改哦～")
+            return ConversationHandler.END
+    else:  # 通过按钮触发（如点击"修改资料"）
+        await update.callback_query.answer()  # 必须调用以关闭按钮加载状态
 
     await safe_reply(update, "让我们开始填写你的资料吧！\n请输入你的昵称：")
-    return NAME  # 进入昵称输入状态
+    return NAME
 
 # 昵称 → 性别
 async def get_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
